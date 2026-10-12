@@ -1,0 +1,418 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#171923">
+  <meta name="description" content="FieldSift is an Android photo culling app for browsing camera cards, reviewing RAW photos, and picking your keepers.">
+  <title>FieldSift — Find the keepers</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #20212a;
+      --muted: #626574;
+      --paper: #fffdf9;
+      --line: #e8e2dc;
+      --sunset: #e5895d;
+      --sunset-dark: #a8482b;
+      --night: #171923;
+      --panel: #f7f1eb;
+      --teal: #b9ddd5;
+      --gold: #f0cf7c;
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      margin: 0;
+      background: var(--paper);
+      color: var(--ink);
+      font: 16px/1.65 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    a { color: inherit; }
+    a:focus-visible { outline: 3px solid var(--sunset); outline-offset: 4px; }
+
+    .wrap { width: min(100% - 2.5rem, 1080px); margin-inline: auto; }
+
+    .top {
+      position: relative;
+      overflow: hidden;
+      background:
+        radial-gradient(ellipse at 78% 40%, rgb(214 107 67 / 22%), transparent 38%),
+        var(--night);
+      color: #fff;
+    }
+
+    nav {
+      display: flex;
+      min-height: 76px;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: .65rem;
+      color: #fff;
+      font-size: 1.06rem;
+      font-weight: 760;
+      letter-spacing: .015em;
+      text-decoration: none;
+    }
+
+    .brand img { width: 36px; height: 36px; border-radius: 10px; }
+    .brand span { color: #f1a273; }
+
+    .nav-link {
+      color: #f3e5dc;
+      font-size: .93rem;
+      text-decoration-color: rgb(243 229 220 / 50%);
+      text-underline-offset: 4px;
+    }
+
+    .hero {
+      display: grid;
+      min-height: 470px;
+      grid-template-columns: 1.15fr .85fr;
+      align-items: center;
+      gap: 3rem;
+      padding-block: 3rem 5.25rem;
+    }
+
+    .eyebrow {
+      margin: 0 0 .8rem;
+      color: #f1a273;
+      font-size: .76rem;
+      font-weight: 760;
+      letter-spacing: .15em;
+      text-transform: uppercase;
+    }
+
+    h1, h2, h3, p { margin-top: 0; }
+
+    h1 {
+      max-width: 650px;
+      margin-bottom: 1.2rem;
+      font-size: clamp(2.8rem, 7vw, 5.25rem);
+      letter-spacing: -.065em;
+      line-height: 1.02;
+    }
+
+    h1 em { color: #f1a273; font-style: normal; }
+
+    .hero-copy {
+      max-width: 560px;
+      margin-bottom: 1.8rem;
+      color: #d8d6dc;
+      font-size: 1.12rem;
+    }
+
+    .hero-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 1rem; }
+
+    .button {
+      display: inline-flex;
+      min-height: 48px;
+      align-items: center;
+      justify-content: center;
+      padding: .7rem 1.15rem;
+      border: 1px solid transparent;
+      border-radius: 999px;
+      background: #f1a273;
+      color: #211713;
+      font-weight: 720;
+      text-decoration: none;
+      transition: background-color .15s ease, transform .15s ease;
+    }
+
+    .button:hover { transform: translateY(-1px); background: #f5b28b; }
+    .text-link { color: #f3e5dc; font-weight: 620; text-underline-offset: 4px; }
+
+    .visual {
+      position: relative;
+      display: grid;
+      min-height: 310px;
+      place-items: center;
+    }
+
+    .visual::before {
+      position: absolute;
+      width: min(78%, 310px);
+      aspect-ratio: 1;
+      border: 1px solid rgb(255 255 255 / 13%);
+      border-radius: 50%;
+      background: radial-gradient(circle, rgb(229 137 93 / 18%), transparent 68%);
+      content: "";
+    }
+
+    .visual img {
+      position: relative;
+      width: min(70%, 260px);
+      border-radius: 25%;
+      box-shadow: 0 28px 70px rgb(0 0 0 / 35%);
+      transform: rotate(4deg);
+    }
+
+    .visual-note {
+      position: absolute;
+      right: 0;
+      bottom: 1.3rem;
+      padding: .65rem .9rem;
+      border: 1px solid rgb(255 255 255 / 16%);
+      border-radius: 12px;
+      background: rgb(255 255 255 / 8%);
+      color: #f6e9df;
+      font-size: .85rem;
+      backdrop-filter: blur(10px);
+    }
+
+    .section { padding-block: 5rem; }
+    .section-heading { max-width: 650px; margin-bottom: 2rem; }
+    .section-heading .eyebrow { color: var(--sunset-dark); }
+    h2 { margin-bottom: .55rem; font-size: clamp(1.9rem, 4vw, 2.65rem); letter-spacing: -.045em; line-height: 1.12; }
+    .section-heading p { margin-bottom: 0; color: var(--muted); font-size: 1.05rem; }
+
+    .feature-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 1rem;
+    }
+
+    .feature {
+      min-height: 195px;
+      padding: 1.4rem;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: #fff;
+    }
+
+    .feature-icon {
+      display: grid;
+      width: 42px;
+      height: 42px;
+      margin-bottom: 1.1rem;
+      place-items: center;
+      border-radius: 13px;
+      background: var(--panel);
+      font-size: 1.2rem;
+    }
+
+    .feature:nth-child(2) .feature-icon { background: #edf5f2; }
+    .feature:nth-child(3) .feature-icon { background: #fbf3df; }
+    .feature h3 { margin-bottom: .45rem; font-size: 1.05rem; }
+    .feature p { margin-bottom: 0; color: var(--muted); font-size: .94rem; }
+
+    .workflow {
+      display: grid;
+      grid-template-columns: .9fr 1.1fr;
+      gap: 3.5rem;
+      align-items: start;
+      padding-block: 4.5rem;
+      border-top: 1px solid var(--line);
+    }
+
+    .workflow p { color: var(--muted); }
+
+    .steps { display: grid; gap: 1.2rem; margin: 0; padding: 0; list-style: none; }
+    .steps li { display: grid; grid-template-columns: 36px 1fr; gap: .9rem; align-items: start; }
+    .step-number {
+      display: grid;
+      width: 34px;
+      height: 34px;
+      place-items: center;
+      border-radius: 50%;
+      background: var(--panel);
+      color: var(--sunset-dark);
+      font-weight: 750;
+    }
+
+    .steps strong { display: block; margin: .1rem 0 .15rem; }
+    .steps span:last-child { color: var(--muted); font-size: .94rem; }
+
+    .formats {
+      padding: 1.5rem;
+      border-radius: 18px;
+      background: var(--panel);
+    }
+
+    .formats h3 { margin-bottom: .5rem; font-size: 1rem; }
+    .formats p { margin-bottom: 0; font-size: .93rem; }
+
+    .plus {
+      padding-block: 4.2rem;
+      background: #f2ebe4;
+    }
+
+    .plus-inner {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 2rem;
+      align-items: center;
+    }
+
+    .plus h2 { font-size: clamp(1.7rem, 3.5vw, 2.3rem); }
+    .plus p { max-width: 730px; margin-bottom: 0; color: var(--muted); }
+
+    .status {
+      display: inline-block;
+      padding: .55rem .85rem;
+      border: 1px solid #decdbd;
+      border-radius: 999px;
+      color: #694837;
+      font-size: .84rem;
+      font-weight: 680;
+      white-space: nowrap;
+    }
+
+    footer {
+      padding-block: 1.6rem;
+      background: var(--night);
+      color: #d8d6dc;
+      font-size: .9rem;
+    }
+
+    .footer-inner { display: flex; flex-wrap: wrap; justify-content: space-between; gap: .8rem 1.5rem; }
+    footer a { color: #f1a273; text-underline-offset: 3px; }
+
+    @media (max-width: 760px) {
+      .hero { min-height: 0; grid-template-columns: 1fr; gap: 1rem; padding-block: 4rem 3rem; }
+      .visual { min-height: 230px; }
+      .visual img { width: min(45%, 190px); }
+      .visual-note { right: 8%; bottom: .4rem; }
+      .feature-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .workflow { grid-template-columns: 1fr; gap: 2rem; }
+    }
+
+    @media (max-width: 520px) {
+      .wrap { width: min(100% - 2rem, 1080px); }
+      nav { min-height: 68px; }
+      .hero { padding-top: 3.25rem; }
+      .hero-copy { font-size: 1.02rem; }
+      .feature-grid { grid-template-columns: 1fr; }
+      .feature { min-height: 0; }
+      .plus-inner { grid-template-columns: 1fr; gap: 1rem; }
+      .status { justify-self: start; white-space: normal; }
+      .section { padding-block: 3.75rem; }
+      .workflow { padding-block: 3.5rem; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      *, *::before, *::after { transition-duration: .01ms !important; }
+    }
+  </style>
+</head>
+<body>
+  <header class="top">
+    <nav class="wrap" aria-label="Main navigation">
+      <a class="brand" href="./" aria-label="FieldSift home">
+        <img src="icon-512.png" alt="">
+        <span>Field<span>Sift</span></span>
+      </a>
+      <a class="nav-link" href="privacy.html">Privacy</a>
+    </nav>
+
+    <div class="hero wrap">
+      <div>
+        <p class="eyebrow">A calmer end to a day in the field</p>
+        <h1>Find the keepers.<br><em>Keep the moment.</em></h1>
+        <p class="hero-copy">
+          FieldSift is an Android photo culling app for browsing camera cards, reviewing RAW photos,
+          and marking the shots you want to keep—right where your photos are.
+        </p>
+        <div class="hero-actions">
+          <a class="button" href="#features">Explore FieldSift</a>
+          <a class="text-link" href="privacy.html">Read the privacy policy</a>
+        </div>
+      </div>
+      <div class="visual" aria-label="FieldSift app icon">
+        <img src="icon-512.png" alt="FieldSift sunset photo stack icon">
+        <span class="visual-note">Made for the photo-card review</span>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section class="section wrap" id="features">
+      <div class="section-heading">
+        <p class="eyebrow">Browse · review · decide</p>
+        <h2>A focused workflow for your next keepers.</h2>
+        <p>Get from a full camera card to a considered selection without importing everything into a desktop workflow first.</p>
+      </div>
+
+      <div class="feature-grid">
+        <article class="feature">
+          <span class="feature-icon" aria-hidden="true">▦</span>
+          <h3>Browse the card</h3>
+          <p>Choose a card folder with Android's system picker and scan supported photo folders into a date-grouped grid.</p>
+        </article>
+        <article class="feature">
+          <span class="feature-icon" aria-hidden="true">◉</span>
+          <h3>Review RAW previews</h3>
+          <p>Open photos full-screen, zoom in, and inspect camera and exposure information. RAW previews come from the image embedded in the file.</p>
+        </article>
+        <article class="feature">
+          <span class="feature-icon" aria-hidden="true">★</span>
+          <h3>Mark your picks</h3>
+          <p>Rate photos from one to five stars, flag Picks or Rejects, and filter the grid to focus on the images that matter.</p>
+        </article>
+        <article class="feature">
+          <span class="feature-icon" aria-hidden="true">⌫</span>
+          <h3>Cull with care</h3>
+          <p>Review rejected shots and confirm before deleting them from the selected card. Marks stay on your device.</p>
+        </article>
+        <article class="feature">
+          <span class="feature-icon" aria-hidden="true">▤</span>
+          <h3>Work with camera formats</h3>
+          <p>Browse common RAW formats alongside JPEG and HEIF photos, including RAW+JPEG pairs.</p>
+        </article>
+        <article class="feature">
+          <span class="feature-icon" aria-hidden="true">⌁</span>
+          <h3>Your folders, your choice</h3>
+          <p>FieldSift accesses folders you select. Your photos are not uploaded to FieldSift developer servers.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="workflow wrap" aria-labelledby="workflow-title">
+      <div>
+        <p class="eyebrow">A simple field workflow</p>
+        <h2 id="workflow-title">Pick a card. Review at your pace.</h2>
+        <p>Connect a supported card reader or camera, choose the folder, then browse and mark photos on your Android device.</p>
+        <div class="formats">
+          <h3>Photo formats</h3>
+          <p>RAW: CR3, CR2, CRW, DNG, NEF, NRW, ARW, RAF, ORF, RW2, PEF, SRW. Also JPG/JPEG, HEIC/HEIF, and HIF.</p>
+        </div>
+      </div>
+      <ol class="steps">
+        <li><span class="step-number">1</span><span><strong>Connect and choose</strong><span>Use Android's folder picker to grant access to the card folder you want to browse.</span></span></li>
+        <li><span class="step-number">2</span><span><strong>Scan and inspect</strong><span>See matching photos in a date-grouped grid. Open a photo to zoom and check its details.</span></span></li>
+        <li><span class="step-number">3</span><span><strong>Rate and cull</strong><span>Set ratings and flags, filter your selection, and confirm before removing rejected files.</span></span></li>
+      </ol>
+    </section>
+
+    <section class="plus">
+      <div class="plus-inner wrap">
+        <div>
+          <p class="eyebrow">More tools ahead</p>
+          <h2>Optional tools for a bigger workflow.</h2>
+          <p>
+            FieldSift includes optional Plus tools for folder backup, JPEG sharing, XMP sidecars,
+            and batch actions. Subscription access is planned, but the purchase flow is not available yet.
+          </p>
+        </div>
+        <span class="status">Plus availability: not yet on sale</span>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="footer-inner wrap">
+      <span>FieldSift · Android photo culling</span>
+      <a href="privacy.html">Privacy Policy</a>
+    </div>
+  </footer>
+</body>
+</html>
